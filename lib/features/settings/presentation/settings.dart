@@ -3,11 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:loan_app/core/theme/app_theme.dart';
 import 'package:loan_app/features/configuration/presentation/configuration.dart';
-import 'package:loan_app/features/loan/data/owner_model.dart';
+// import 'package:loan_app/features/loan/data/owner_model.dart';
 import 'package:loan_app/features/owner/presentation/view_owner_page.dart';
 import 'package:loan_app/features/report/presentation/loan_report_page.dart';
 import 'package:loan_app/widgets/appbar.dart';
-import 'package:loan_app/widgets/custom_snackbar.dart';
+import 'package:loan_app/widgets/rain_drop_animation.dart';
+// import 'package:loan_app/widgets/custom_snackbar.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -40,7 +41,17 @@ class _SettingsPageState extends State<SettingsPage> {
         centerTitle: true,
         actionWidget: IconButton(
           icon: Image.asset("assets/images/ganesh_logo.jpg", height: 28),
-          onPressed: () {},
+          onPressed: () {
+            // Trigger raindrop animation
+            RainDropManager.showRain(
+              context,
+              dropWidget: Image.asset(
+                "assets/images/ganesh_logo.png",
+                height: 20,
+              ),
+              dropCount: 40,
+            );
+          },
         ),
       ),
       body: SafeArea(

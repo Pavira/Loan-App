@@ -9,6 +9,7 @@ import 'package:loan_app/features/loan/data/owner_model.dart';
 import 'package:loan_app/widgets/animated_dynamic_dropdown.dart';
 import 'package:loan_app/widgets/appbar.dart';
 import 'package:loan_app/widgets/loan_home_card.dart';
+import 'package:loan_app/widgets/rain_drop_animation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class HomePage extends StatefulWidget {
@@ -113,7 +114,17 @@ class _HomePageState extends State<HomePage> {
         title: 'Royal Finance Solutions',
         actionWidget: IconButton(
           icon: Image.asset("assets/images/ganesh_logo.jpg", height: 28),
-          onPressed: () {},
+          onPressed: () {
+            // Trigger raindrop animation
+            RainDropManager.showRain(
+              context,
+              dropWidget: Image.asset(
+                "assets/images/ganesh_logo.png",
+                height: 20,
+              ),
+              dropCount: 40,
+            );
+          },
         ),
       ),
       body: SafeArea(
