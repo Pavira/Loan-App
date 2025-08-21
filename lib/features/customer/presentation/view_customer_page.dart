@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loan_app/core/theme/app_theme.dart';
 import 'package:loan_app/features/customer/data/customer_model.dart';
-import 'package:loan_app/features/customer/presentation/add_customer_page.dart';
+// import 'package:loan_app/features/customer/presentation/add_customer_page.dart';
 import 'package:loan_app/features/customer/data/customer_repository.dart';
 import 'package:loan_app/features/customer/presentation/update_customer_page.dart';
 import 'package:loan_app/features/loan/presentation/loan_history_page.dart';
