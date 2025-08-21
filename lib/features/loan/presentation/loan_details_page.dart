@@ -58,8 +58,19 @@ class _LoanDetailsPageState extends State<LoanDetailsPage> {
       final fineRaw = repayment['fine_amount'] ?? 0;
       double fineAmount = fineRaw is int ? fineRaw.toDouble() : fineRaw;
 
-      if (!isPaid && dueDate.isBefore(DateTime.now())) {
-        final calculatedFine = amount * 0.25;
+      final finePercentageRaw = repayment['fine_percentage'] ?? 0;
+      int finePercentage =
+          finePercentageRaw is int
+              ? finePercentageRaw.toInt()
+              : finePercentageRaw;
+
+      // if (!isPaid && dueDate.isBefore(DateTime.now())) {
+      if (!isPaid && DateTime.now().isAfter(dueDate.add(Duration(days: 1)))) {
+        final calculatedFineRaw = amount * (finePercentage / 100);
+
+        final calculatedFine = double.parse(
+          calculatedFineRaw.toStringAsFixed(0),
+        );
 
         // Only apply fine if not already applied
         if (fineAmount == 0.0) {

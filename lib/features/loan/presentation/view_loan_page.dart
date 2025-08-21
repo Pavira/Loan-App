@@ -361,7 +361,7 @@ class ViewLoanPageState extends State<ViewLoanPage> {
                                                           ?.toString() ??
                                                       '0',
                                                 ) ??
-                                                0.0,
+                                                0,
                                             dueDate:
                                                 loan['due_date'] != null
                                                     ? (loan['due_date']

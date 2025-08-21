@@ -18,12 +18,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Container(
-        decoration: const BoxDecoration(color: appBarColor),
+        decoration: const BoxDecoration(
+          color: appBarColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 2,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
         padding: const EdgeInsets.only(top: 12),
         alignment: Alignment.center,
         child: AppBar(
           elevation: 0,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           title: Text(
             title,
             style: const TextStyle(

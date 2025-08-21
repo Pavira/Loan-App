@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:loan_app/core/theme/app_theme.dart';
+import 'package:loan_app/features/configuration/presentation/configuration.dart';
 import 'package:loan_app/features/loan/data/owner_model.dart';
 import 'package:loan_app/features/owner/presentation/view_owner_page.dart';
 import 'package:loan_app/features/report/presentation/loan_report_page.dart';
@@ -95,21 +96,25 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(),
           ListTile(
+            dense: true, // <-- reduces vertical height
+            minVerticalPadding: 0, // <-- tighter padding
+            visualDensity: const VisualDensity(
+              vertical: -2,
+            ), // <-- makes it compact
             contentPadding: EdgeInsets.zero,
             title: const Text('Configuration', style: TextStyle(fontSize: 13)),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
             onTap: () {
-              showCustomSnackbar(
+              Navigator.push(
                 context,
-                "Switch to paid plan to view customer report",
+                MaterialPageRoute(builder: (context) => ConfigurationPage()),
               );
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => LoanPage()),
-              // );
             },
           ),
           ListTile(
+            dense: true,
+            minVerticalPadding: 0,
+            visualDensity: const VisualDensity(vertical: -2),
             contentPadding: EdgeInsets.zero,
             title: const Text('Owner Details', style: TextStyle(fontSize: 13)),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
@@ -162,25 +167,30 @@ class _SettingsPageState extends State<SettingsPage> {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const Divider(),
+          // ListTile(
+          //   contentPadding: EdgeInsets.zero,
+          //   title: const Text(
+          //     'Customer Report',
+          //     style: TextStyle(fontSize: 13),
+          //   ),
+          //   trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+          //   onTap: () {
+          //     showCustomSnackbar(
+          //       context,
+          //       "Switch to paid plan to view customer report",
+          //     );
+          //     // Navigator.push(
+          //     //   context,
+          //     //   MaterialPageRoute(builder: (context) => LoanPage()),
+          //     // );
+          //   },
+          // ),
           ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'Customer Report',
-              style: TextStyle(fontSize: 13),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-            onTap: () {
-              showCustomSnackbar(
-                context,
-                "Switch to paid plan to view customer report",
-              );
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => LoanPage()),
-              // );
-            },
-          ),
-          ListTile(
+            dense: true, // <-- reduces vertical height
+            minVerticalPadding: 0, // <-- tighter padding
+            visualDensity: const VisualDensity(
+              vertical: -2,
+            ), // <-- makes it compact
             contentPadding: EdgeInsets.zero,
             title: const Text(
               'Monthly Loan Report',
@@ -218,14 +228,19 @@ class _SettingsPageState extends State<SettingsPage> {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           Divider(),
+          // ListTile(
+          //   contentPadding: EdgeInsets.zero,
+          //   title: const Text(
+          //     'Terms and Conditions',
+          //     style: TextStyle(fontSize: 12),
+          //   ),
+          // ),
           ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'Terms and Conditions',
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
-          ListTile(
+            dense: true, // <-- reduces vertical height
+            minVerticalPadding: 0, // <-- tighter padding
+            visualDensity: const VisualDensity(
+              vertical: -2,
+            ), // <-- makes it compact
             contentPadding: EdgeInsets.zero,
             title: const Text('Version: 1.0.0', style: TextStyle(fontSize: 12)),
           ),

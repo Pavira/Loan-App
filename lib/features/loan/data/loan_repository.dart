@@ -199,7 +199,7 @@ class LoanRepository {
   ///Loan Repayment Functions
 
   Future<List<Map<String, dynamic>>> fetchRepayments(String loanId) async {
-    print('Fetching repayments for loanId: $loanId');
+    print('#Fetching repayments for loanId: $loanId');
     final snapshot =
         await _firestore
             .collection('loanDetails')
@@ -208,14 +208,26 @@ class LoanRepository {
             .orderBy('due_date')
             .get();
 
+    final config_ref =
+        await _firestore.collection('configurations').doc('app_config').get();
+
+    int finePercentage = 0;
+    if (config_ref.exists) {
+      final data = config_ref.data()!;
+      finePercentage = (data['finePercentage'] as num?)?.toInt() ?? 0;
+      print('/////////////Fetched fine percentage: $finePercentage');
+    }
+
     return snapshot.docs.map((doc) {
       final data = doc.data();
+      print('Fetched repayment: $data');
       return {
         'id': doc.id,
         'due_date': (data['due_date'] as Timestamp).toDate(),
         'repayment_amount': data['repayment_amount'] ?? 0,
         'is_paid': data['is_paid'] ?? false,
-        'fine_amount': data['fine_amount'] ?? 0.0,
+        'fine_amount': data['fine_amount'] ?? 0,
+        'fine_percentage': finePercentage,
       };
     }).toList();
   }
@@ -242,65 +254,6 @@ class LoanRepository {
     return {'totalPendingAmount': pendingAmount, 'totalFineAmount': fineAmount};
   }
 
-  // Future<void> toggleRepaymentStatus(String loanId, String docId) async {
-  //   // print('Toggling repayment status for loanId: $loanId, docId: $docId');
-  //   const maxRetries = 3;
-  //   int retryCount = 0;
-  //   double totalPendingAmount = 0.0;
-
-  //   final loanRef = _firestore.collection('loanDetails').doc(loanId);
-  //   final repaymentRef = loanRef.collection('repayments').doc(docId);
-
-  //   // Get current month key in format "yyyy-MM"
-  //   final String currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
-  //   final loanByMonthRef = _firestore
-  //       .collection('loansByMonth')
-  //       .doc(currentMonth)
-  //       .collection('loans')
-  //       .doc(loanId);
-
-  //   while (retryCount < maxRetries) {
-  //     try {
-  //       await _firestore.runTransaction((transaction) async {
-  //         final document = await transaction.get(loanRef);
-  //         final snapshot = await transaction.get(repaymentRef);
-  //         final currentStatus = snapshot['is_paid'] ?? false;
-  //         final paymentDate =
-  //             currentStatus ? null : FieldValue.serverTimestamp();
-
-  //         // Subtract monthly payment from loan amount to get pending
-  //         totalPendingAmount =
-  //             ((document['total_pending_amount'] ?? 0.0) -
-  //                 (document['calculated_monthly_payment'] ?? 0.0));
-
-  //         // print('total_pending_amount: ${document['total_pending_amount']}');
-  //         // print(
-  //         //   'calculated_monthly_payment: ${document['calculated_monthly_payment']}',
-  //         // );
-  //         // print('Total Pending Amount before update: $totalPendingAmount');
-  //         transaction.update(loanRef, {
-  //           'total_pending_amount': totalPendingAmount,
-  //         });
-
-  //         transaction.update(repaymentRef, {
-  //           'is_paid': !currentStatus,
-  //           'repayment_date': paymentDate,
-  //         });
-  //       });
-
-  //       break; // Exit loop on success
-  //     } catch (e) {
-  //       retryCount++;
-  //       print("⚠️ Attempt $retryCount failed: $e");
-  //       await Future.delayed(Duration(milliseconds: 500 * retryCount));
-  //       if (retryCount == maxRetries) {
-  //         throw Exception(
-  //           "❌ Failed to toggle repayment after $maxRetries attempts: $e",
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
   String formatDate(DateTime? date) {
     if (date == null) return "N/A";
     return DateFormat('dd-MMM-yy').format(date);
@@ -336,8 +289,8 @@ class LoanRepository {
           final repaymentSnap = await transaction.get(repaymentRef);
 
           final currentStatus = repaymentSnap['is_paid'] ?? false;
-          final monthlyPayment = loanSnap['calculated_monthly_payment'] ?? 0.0;
-          final existingPending = loanSnap['total_pending_amount'] ?? 0.0;
+          final monthlyPayment = loanSnap['calculated_monthly_payment'] ?? 0;
+          final existingPending = loanSnap['total_pending_amount'] ?? 0;
 
           final updatedPending =
               currentStatus
@@ -378,59 +331,6 @@ class LoanRepository {
     }
   }
 
-  // -----------------Toggle Unpaid Repayment Status-----------------
-  // Future<void> toggleToUnpaidRepaymentStatus(
-  //   String loanId,
-  //   String docId,
-  // ) async {
-  //   print('Toggling repayment status for loanId: $loanId, docId: $docId');
-  //   const maxRetries = 3;
-  //   int retryCount = 0;
-  //   final loanRef = _firestore.collection('loanDetails').doc(loanId);
-  //   final repaymentRef = loanRef.collection('repayments').doc(docId);
-  //   double totalPendingAmount = 0.0;
-
-  //   while (retryCount < maxRetries) {
-  //     try {
-  //       await _firestore.runTransaction((transaction) async {
-  //         final document = await transaction.get(loanRef);
-  //         final snapshot = await transaction.get(repaymentRef);
-  //         final currentStatus = snapshot['is_paid'] ?? false;
-  //         final paymentDate =
-  //             currentStatus ? null : FieldValue.serverTimestamp();
-
-  //         // Subtract monthly payment from loan amount to get pending
-  //         totalPendingAmount =
-  //             ((document['total_pending_amount'] ?? 0.0) +
-  //                 (document['calculated_monthly_payment'] ?? 0.0));
-
-  //         print('total_pending_amount: ${document['total_pending_amount']}');
-  //         print(
-  //           'calculated_monthly_payment: ${document['calculated_monthly_payment']}',
-  //         );
-  //         print('Total Pending Amount before update: $totalPendingAmount');
-  //         transaction.update(loanRef, {
-  //           'total_pending_amount': totalPendingAmount,
-  //         });
-
-  //         transaction.update(repaymentRef, {
-  //           'is_paid': !currentStatus,
-  //           'repayment_date': paymentDate,
-  //         });
-  //       });
-  //       break; // Exit loop on success
-  //     } catch (e) {
-  //       retryCount++;
-  //       print("⚠️ Attempt $retryCount failed: $e");
-  //       await Future.delayed(Duration(milliseconds: 500 * retryCount));
-  //       if (retryCount == maxRetries) {
-  //         throw Exception(
-  //           "❌ Failed to toggle repayment after $maxRetries attempts: $e",
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
   Future<void> toggleToUnpaidRepaymentStatus(
     String loanId,
     String repaymentId,
@@ -462,8 +362,8 @@ class LoanRepository {
             throw Exception("Repayment is already marked as unpaid.");
           }
 
-          final monthlyPayment = loanSnap['calculated_monthly_payment'] ?? 0.0;
-          final existingPending = loanSnap['total_pending_amount'] ?? 0.0;
+          final monthlyPayment = loanSnap['calculated_monthly_payment'] ?? 0;
+          final existingPending = loanSnap['total_pending_amount'] ?? 0;
 
           final updatedPending = existingPending + monthlyPayment;
 

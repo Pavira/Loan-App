@@ -115,8 +115,9 @@ class CreateLoanModel extends LoanModelBase {
       remarks: data['remarks'],
       status: data['status'],
       createdDate: data['created_date'],
-      totalPendingAmount: data['total_pending_amount'] ?? '0.0',
-      totalFineAmount: data['total_fine_amount'] ?? '0.0',
+      totalPendingAmount:
+          (data['total_pending_amount'] as num?)?.toDouble() ?? 0.0,
+      totalFineAmount: (data['total_fine_amount'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -181,10 +182,10 @@ class LoanReportModel {
       loanId: data['loan_id'] ?? '',
       customerName: data['customer_name'] ?? '',
       customerPhone: data['customer_phone'] ?? '',
-      repaymentAmount: (data['re-payment_amount'] ?? 0).toDouble(),
+      repaymentAmount: data['re-payment_amount'] ?? 0.0,
       isPaid: data['is_paid'] ?? false,
-      totalLoanAmount: (data['total_loan_amount'] ?? 0).toDouble(),
-      totalPendingAmount: (data['total_pending_amount'] ?? 0).toDouble(),
+      totalLoanAmount: data['total_loan_amount'] ?? 0.0,
+      totalPendingAmount: data['total_pending_amount'] ?? 0.0,
     );
   }
 }
