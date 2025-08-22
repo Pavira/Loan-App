@@ -129,26 +129,26 @@ class LoanRepository {
           });
 
           // 🟢 Add summary in loansByMonth/yyyy-MM/items/loanId
-          final String monthKey =
-              '${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}';
+          // final String monthKey =
+          //     '${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}';
 
-          final monthRef = _firestore
-              .collection('loansByMonth')
-              .doc(monthKey)
-              .collection('loans')
-              .doc(loanId);
+          // final monthRef = _firestore
+          //     .collection('loansByMonth')
+          //     .doc(monthKey)
+          //     .collection('loans')
+          //     .doc(loanId);
 
-          transaction.set(monthRef, {
-            'loan_id': loanId,
-            'customer_name': loan.customerName,
-            'customer_phone': loan.customerPhoneNumber,
-            'owner_name': loan.ownerName,
-            're-payment_amount': loan.calculatedMonthlyPayment,
-            'total_pending_amount': loan.totalPendingAmount,
-            'total_loan_amount': loan.loanAmount,
-            'due_date': dueDate,
-            'is_paid': false,
-          });
+          // transaction.set(monthRef, {
+          //   'loan_id': loanId,
+          //   'customer_name': loan.customerName,
+          //   'customer_phone': loan.customerPhoneNumber,
+          //   'owner_name': loan.ownerName,
+          //   're-payment_amount': loan.calculatedMonthlyPayment,
+          //   'total_pending_amount': loan.totalPendingAmount,
+          //   'total_loan_amount': loan.loanAmount,
+          //   'due_date': dueDate,
+          //   'is_paid': false,
+          // });
         }
         //------------ Step 3: Update loan counter
         if (countSnapshot.exists) {
@@ -274,12 +274,12 @@ class LoanRepository {
 
     // Get current month key in format "yyyy-MM"
     // final String currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
-    final String currentMonth = DateFormat('yyyy-MM').format(dueDate);
-    final loanByMonthRef = _firestore
-        .collection('loansByMonth')
-        .doc(currentMonth)
-        .collection('loans')
-        .doc(loanId);
+    // final String currentMonth = DateFormat('yyyy-MM').format(dueDate);
+    // final loanByMonthRef = _firestore
+    //     .collection('loansByMonth')
+    //     .doc(currentMonth)
+    //     .collection('loans')
+    //     .doc(loanId);
 
     while (retryCount < maxRetries) {
       try {
@@ -310,10 +310,10 @@ class LoanRepository {
           });
 
           // 🔁 Update loansByMonth/{yyyy-MM}/loans/{loanId}
-          transaction.update(loanByMonthRef, {
-            'is_paid': !currentStatus,
-            'total_pending_amount': updatedPending,
-          });
+          // transaction.update(loanByMonthRef, {
+          //   'is_paid': !currentStatus,
+          //   'total_pending_amount': updatedPending,
+          // });
         });
 
         print('✅ Repayment status toggled successfully');
@@ -343,12 +343,12 @@ class LoanRepository {
     final repaymentRef = loanRef.collection('repayments').doc(repaymentId);
 
     // final currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
-    final String currentMonth = DateFormat('yyyy-MM').format(dueDate);
-    final loanByMonthRef = _firestore
-        .collection('loansByMonth')
-        .doc(currentMonth)
-        .collection('loans')
-        .doc(loanId);
+    // final String currentMonth = DateFormat('yyyy-MM').format(dueDate);
+    // final loanByMonthRef = _firestore
+    //     .collection('loansByMonth')
+    //     .doc(currentMonth)
+    //     .collection('loans')
+    //     .doc(loanId);
 
     while (retryCount < maxRetries) {
       try {
@@ -377,10 +377,10 @@ class LoanRepository {
           });
 
           // Update the loansByMonth doc
-          transaction.update(loanByMonthRef, {
-            'is_paid': false,
-            'total_pending_amount': updatedPending,
-          });
+          // transaction.update(loanByMonthRef, {
+          //   'is_paid': false,
+          //   'total_pending_amount': updatedPending,
+          // });
         });
 
         print('✅ Repayment marked as unpaid successfully');

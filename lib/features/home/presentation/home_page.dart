@@ -1,4 +1,4 @@
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,12 +23,13 @@ class _HomePageState extends State<HomePage> {
   bool _isFirstBuild = true;
   // late Future<List<Owner>> _ownerNames;
   Future<List<Map<String, dynamic>>>? _loanDataFuture;
+  // Future<List<LoanReportModel>>? _loanDataFuture;
 
   @override
   void initState() {
     super.initState();
     requestContactPermission();
-    requestStoragePermission();
+
     _initializeOwnerAndData();
   }
 
@@ -58,35 +59,6 @@ class _HomePageState extends State<HomePage> {
     if (!status.isGranted) {
       await Permission.contacts.request();
     }
-  }
-
-  Future<bool> requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      // For Android 11+ (SDK 30+)
-      final manageExternalStorage =
-          await Permission.manageExternalStorage.status;
-      final storagePermission = await Permission.storage.status;
-
-      if (!manageExternalStorage.isGranted || !storagePermission.isGranted) {
-        final result =
-            await [
-              Permission.manageExternalStorage,
-              Permission.storage,
-            ].request();
-
-        final granted =
-            result[Permission.manageExternalStorage]?.isGranted == true &&
-            result[Permission.storage]?.isGranted == true;
-
-        if (!granted) {
-          print('❌ Storage permission denied');
-          return false;
-        }
-      }
-
-      return true;
-    }
-    return true;
   }
 
   Future<void> _refreshCounts() async {
@@ -404,7 +376,7 @@ class _HomePageState extends State<HomePage> {
                             flex: 2,
                             child: Text(
                               style: TextStyle(fontSize: 11),
-                              "₹${entry['re-payment_amount'] ?? 0}",
+                              "₹${entry['repayment_amount'] ?? 0}",
                               textAlign: TextAlign.left,
                             ),
                           ),

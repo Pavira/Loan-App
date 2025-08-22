@@ -59,6 +59,11 @@ class _LoanDetailsPageState extends State<LoanDetailsPage> {
       double fineAmount = fineRaw is int ? fineRaw.toDouble() : fineRaw;
 
       final finePercentageRaw = repayment['fine_percentage'] ?? 0;
+      if (finePercentageRaw == 0) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Your fine percentage is 0%")));
+      }
       int finePercentage =
           finePercentageRaw is int
               ? finePercentageRaw.toInt()

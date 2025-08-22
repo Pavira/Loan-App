@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:loan_app/core/theme/app_theme.dart';
-import 'package:loan_app/features/loan/data/loan_model.dart';
+// import 'package:loan_app/features/loan/data/loan_model.dart';
 import 'package:loan_app/features/loan/data/loan_repository.dart';
 import 'package:loan_app/features/loan/data/owner_model.dart';
 import 'package:loan_app/features/report/data/report_repository.dart';
@@ -10,6 +11,8 @@ import 'package:loan_app/widgets/button.dart';
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoanPage extends StatefulWidget {
   @override
@@ -24,6 +27,36 @@ class _LoanPageState extends State<LoanPage> {
   @override
   void initState() {
     super.initState();
+    requestStoragePermission();
+  }
+
+  // ----------------Storage Permission Function------------------
+  Future<bool> requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      // For Android 11+ (SDK 30+)
+      final manageExternalStorage =
+          await Permission.manageExternalStorage.status;
+      final storagePermission = await Permission.storage.status;
+
+      if (!manageExternalStorage.isGranted || !storagePermission.isGranted) {
+        final result =
+            await [
+              Permission.manageExternalStorage,
+              Permission.storage,
+            ].request();
+
+        final granted =
+            result[Permission.manageExternalStorage]?.isGranted == true &&
+            result[Permission.storage]?.isGranted == true;
+
+        if (!granted) {
+          print('❌ Storage permission denied');
+          return false;
+        }
+      }
+      return true;
+    }
+    return true;
   }
 
   List<DateTime> generateMonthList({
@@ -60,110 +93,162 @@ class _LoanPageState extends State<LoanPage> {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}";
   }
 
-  // ----------------Storage Permission Function------------------
-  // Future<bool> requestStoragePermission() async {
-  //   final status = await Permission.storage.request();
-  //   return status.isGranted;
-  // }
-
-  // Future<bool> requestStoragePermission() async {
-  //   if (Platform.isAndroid) {
-  //     // For Android 11+ (SDK 30+)
-  //     final manageExternalStorage =
-  //         await Permission.manageExternalStorage.status;
-  //     final storagePermission = await Permission.storage.status;
-
-  //     if (!manageExternalStorage.isGranted || !storagePermission.isGranted) {
-  //       final result =
-  //           await [
-  //             Permission.manageExternalStorage,
-  //             Permission.storage,
-  //           ].request();
-
-  //       final granted =
-  //           result[Permission.manageExternalStorage]?.isGranted == true &&
-  //           result[Permission.storage]?.isGranted == true;
-
-  //       if (!granted) {
-  //         print('❌ Storage permission denied');
-  //         return false;
-  //       }
-  //     }
-
-  //     return true;
-  //   }
-  //   return true;
-  // }
-
   // ----------------Excel Export Function------------------
+  //================Save file temporarily ===============
   Future<void> exportLoanReport(
     String ownerName,
     String? selectedMonth,
-    List<LoanReportModel> loanData,
+    List<Map<String, dynamic>>? loanData,
   ) async {
-    // if (!await requestStoragePermission()) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text('Storage permission is required to save Excel')),
-    //   );
-    //   return;
-    // }
+    if (loanData == null || loanData.isEmpty) return;
 
+    // ✅ Temporary directory
+    final tempDir = await getTemporaryDirectory();
+
+    // ✅ File name with timestamp
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final fileName =
+        'Loan_Report_${selectedMonth ?? ''}_$ownerName$timestamp.xlsx'
+            .replaceAll(' ', '_');
+    final filePath = '${tempDir.path}/$fileName';
+
+    // ✅ Create Excel
     final excel = Excel.createExcel();
     final sheet = excel['Sheet1'];
 
-    // Report Headings
-    sheet.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("H1"));
+    // ✅ Report Title
+    sheet.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("M1"));
     sheet.cell(CellIndex.indexByString("A1")).value = TextCellValue(
-      "Report for Month: ${selectedMonth ?? ''}",
+      "Loan Report - ${selectedMonth ?? ''}",
     );
-
-    sheet.merge(CellIndex.indexByString("A2"), CellIndex.indexByString("H2"));
+    sheet.merge(CellIndex.indexByString("A2"), CellIndex.indexByString("M2"));
     sheet.cell(CellIndex.indexByString("A2")).value = TextCellValue(
       "Owner: $ownerName",
     );
 
-    // Column Headers
-    sheet.appendRow([
-      TextCellValue('S.No.'),
-      TextCellValue('Loan ID'),
-      TextCellValue('Customer Name'),
-      TextCellValue('Phone Number'),
-      TextCellValue('Re-payment Amount'),
-      TextCellValue('Is Paid'),
-      TextCellValue('Pending Amount'),
-      TextCellValue('Total Loan Amount'),
-    ]);
+    // ✅ Column Headers
+    sheet.appendRow(
+      [
+        'S.No.',
+        'Customer Name',
+        'Phone Number',
+        'Status',
+        'Loan Amount',
+        'Loan Duration',
+        'Interest Rate%',
+        'Repayment Amount',
+        'Current Month',
+        'Pending Month',
+        'Total Paid Amount',
+        'Total Pending Amount',
+        'Fine Amount',
+        'Total Loan Amount',
+      ].map((e) => TextCellValue(e)).toList(),
+    );
 
-    // Loan Data Rows
+    // ✅ Add loan data rows
     for (int i = 0; i < loanData.length; i++) {
       final item = loanData[i];
       sheet.appendRow([
         IntCellValue(i + 1),
-        TextCellValue(item.loanId),
-        TextCellValue(item.customerName),
-        TextCellValue(item.customerPhone),
-        DoubleCellValue(item.repaymentAmount),
-        TextCellValue(item.isPaid ? 'Paid' : 'Pending'),
-        DoubleCellValue(item.totalPendingAmount),
-        DoubleCellValue(item.totalLoanAmount),
+        TextCellValue(item['customer_name'] ?? ''),
+        TextCellValue(item['customer_phone_number'] ?? ''),
+        TextCellValue(item['status'] == true ? 'Paid' : 'Pending'),
+        DoubleCellValue((item['loan_amount'] as num?)?.toDouble() ?? 0.0),
+        IntCellValue(item['loan_duration'] ?? 0),
+        DoubleCellValue((item['interest_rate'] as num?)?.toDouble() ?? 0.0),
+        DoubleCellValue((item['repayment_amount'] as num?)?.toDouble() ?? 0.0),
+        IntCellValue(item['current_month'] ?? 0),
+        IntCellValue(item['pending_month'] ?? 0),
+        DoubleCellValue((item['total_paid_amount'] as num?)?.toDouble() ?? 0.0),
+        DoubleCellValue(
+          (item['total_pending_amount'] as num?)?.toDouble() ?? 0.0,
+        ),
+        DoubleCellValue((item['fine_amount'] as num?)?.toDouble() ?? 0.0),
+        DoubleCellValue((item['total_loan_amount'] as num?)?.toDouble() ?? 0.0),
       ]);
     }
 
-    // Save File to Downloads
-    final downloadsDir = Directory('/storage/emulated/0/Download');
-    final fileName = 'Loan_Report_${selectedMonth ?? ''}_$ownerName.xlsx'
-        .replaceAll(' ', '_');
-    final filePath = '${downloadsDir.path}/$fileName';
+    // ✅ Save to temp file
+    final file = File(filePath);
+    await file.writeAsBytes(excel.encode()!);
+    print("✅ Excel created: $filePath");
 
-    final file =
-        File(filePath)
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(excel.encode()!);
-
-    print("✅ Excel saved to: $filePath");
-
+    // ✅ Open file
     await OpenFile.open(filePath);
+
+    // ✅ Optional: delete after delay
+    Future.delayed(const Duration(minutes: 1), () {
+      if (file.existsSync()) {
+        file.deleteSync();
+        print("🗑 Temporary file deleted: $filePath");
+      }
+    });
   }
+
+  //================Save file when open in download ===============
+  // Future<void> exportLoanReport(
+  //   String ownerName,
+  //   String? selectedMonth,
+  //   List<LoanReportModel> loanData,
+  // ) async {
+
+  //   final excel = Excel.createExcel();
+  //   final sheet = excel['Sheet1'];
+
+  //   // Report Headings
+  //   sheet.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("H1"));
+  //   sheet.cell(CellIndex.indexByString("A1")).value = TextCellValue(
+  //     "Report for Month: ${selectedMonth ?? ''}",
+  //   );
+
+  //   sheet.merge(CellIndex.indexByString("A2"), CellIndex.indexByString("H2"));
+  //   sheet.cell(CellIndex.indexByString("A2")).value = TextCellValue(
+  //     "Owner: $ownerName",
+  //   );
+
+  //   // Column Headers
+  //   sheet.appendRow([
+  //     TextCellValue('S.No.'),
+  //     TextCellValue('Loan ID'),
+  //     TextCellValue('Customer Name'),
+  //     TextCellValue('Phone Number'),
+  //     TextCellValue('Re-payment Amount'),
+  //     TextCellValue('Is Paid'),
+  //     TextCellValue('Pending Amount'),
+  //     TextCellValue('Total Loan Amount'),
+  //   ]);
+
+  //   // Loan Data Rows
+  //   for (int i = 0; i < loanData.length; i++) {
+  //     final item = loanData[i];
+  //     sheet.appendRow([
+  //       IntCellValue(i + 1),
+  //       TextCellValue(item.loanId),
+  //       TextCellValue(item.customerName),
+  //       TextCellValue(item.customerPhone),
+  //       DoubleCellValue(item.repaymentAmount),
+  //       TextCellValue(item.isPaid ? 'Paid' : 'Pending'),
+  //       DoubleCellValue(item.totalPendingAmount),
+  //       DoubleCellValue(item.totalLoanAmount),
+  //     ]);
+  //   }
+
+  //   // Save File to Downloads
+  //   final downloadsDir = Directory('/storage/emulated/0/Download');
+  //   final fileName = 'Loan_Report_${selectedMonth ?? ''}_$ownerName.xlsx'
+  //       .replaceAll(' ', '_');
+  //   final filePath = '${downloadsDir.path}/$fileName';
+
+  //   final file =
+  //       File(filePath)
+  //         ..createSync(recursive: true)
+  //         ..writeAsBytesSync(excel.encode()!);
+
+  //   print("✅ Excel saved to: $filePath");
+
+  //   await OpenFile.open(filePath);
+  // }
   // ----------------Excel Export Function End------------------
 
   @override
@@ -249,7 +334,7 @@ class _LoanPageState extends State<LoanPage> {
 
                             final loanData = await ReportRepository()
                                 .fetchLoanReport(
-                                  monthDocId: monthDocId,
+                                  monthName: monthDocId,
                                   ownerName: ownerName,
                                 );
 

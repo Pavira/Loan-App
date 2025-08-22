@@ -37,6 +37,9 @@ class LoanModelBase {
     this.totalFineAmount,
   });
 
+  /// Helper function to round nullable numbers to 0 decimal places
+  double roundDouble(num? value) => (value ?? 0).toDouble().roundToDouble();
+
   Map<String, dynamic> toMapBase() => {
     'loan_id': loanId,
     'customer_id': customerId,
@@ -44,17 +47,17 @@ class LoanModelBase {
     'customer_phone_number': customerPhoneNumber,
     'owner_name': ownerName,
     'owner_id': ownerId,
-    'loan_amount': loanAmount,
-    'loan_duration': loanDuration,
-    'interest_rate': interestRate,
+    'loan_amount': roundDouble(loanAmount),
+    'loan_duration': loanDuration ?? 0,
+    'interest_rate': roundDouble(interestRate),
     'due_date': dueDate,
-    'calculated_monthly_payment': calculatedMonthlyPayment,
-    'total_interest_amount': totalInterestAmount,
+    'calculated_monthly_payment': roundDouble(calculatedMonthlyPayment),
+    'total_interest_amount': roundDouble(totalInterestAmount),
     'security': security,
     'remarks': remarks,
     'status': status,
-    'total_pending_amount': totalPendingAmount,
-    'total_fine_amount': totalFineAmount,
+    'total_pending_amount': roundDouble(totalPendingAmount),
+    'total_fine_amount': roundDouble(totalFineAmount),
   };
 }
 
@@ -96,6 +99,8 @@ class CreateLoanModel extends LoanModelBase {
   }
 
   factory CreateLoanModel.fromMap(Map<String, dynamic> data) {
+    double roundDouble(num? value) => ((value ?? 0).toDouble()).roundToDouble();
+
     return CreateLoanModel(
       loanId: data['loan_id'] ?? '',
       customerId: data['customer_id'] ?? '',
@@ -103,21 +108,18 @@ class CreateLoanModel extends LoanModelBase {
       customerPhoneNumber: data['customer_phone_number'] ?? '',
       ownerName: data['owner_name'] ?? '',
       ownerId: data['owner_id'] ?? '',
-      loanAmount: (data['loan_amount'] as num?)?.toDouble() ?? 0.0,
+      loanAmount: roundDouble(data['loan_amount']),
       loanDuration: data['loan_duration'] ?? 0,
-      interestRate: (data['interest_rate'] as num?)?.toDouble() ?? 0.0,
+      interestRate: roundDouble(data['interest_rate']),
       dueDate: data['due_date'],
-      calculatedMonthlyPayment:
-          (data['calculated_monthly_payment'] as num?)?.toDouble() ?? 0.0,
-      totalInterestAmount:
-          (data['total_interest_amount'] as num?)?.toDouble() ?? 0.0,
+      calculatedMonthlyPayment: roundDouble(data['calculated_monthly_payment']),
+      totalInterestAmount: roundDouble(data['total_interest_amount']),
       security: data['security'],
       remarks: data['remarks'],
       status: data['status'],
       createdDate: data['created_date'],
-      totalPendingAmount:
-          (data['total_pending_amount'] as num?)?.toDouble() ?? 0.0,
-      totalFineAmount: (data['total_fine_amount'] as num?)?.toDouble() ?? 0.0,
+      totalPendingAmount: roundDouble(data['total_pending_amount']),
+      totalFineAmount: roundDouble(data['total_fine_amount']),
     );
   }
 
@@ -158,34 +160,36 @@ class UpdateLoanModel extends LoanModelBase {
   }
 }
 
-class LoanReportModel {
-  final String loanId;
-  final String customerName;
-  final String customerPhone;
-  final double repaymentAmount;
-  final bool isPaid;
-  final double totalLoanAmount;
-  final double totalPendingAmount;
+// class LoanReportModel {
+//   final String loanId;
+//   final String customerName;
+//   final String customerPhone;
+//   final double repaymentAmount;
+//   final bool isPaid;
+//   final double totalLoanAmount;
+//   final double totalPendingAmount;
 
-  LoanReportModel({
-    required this.loanId,
-    required this.customerName,
-    required this.customerPhone,
-    required this.repaymentAmount,
-    required this.isPaid,
-    required this.totalLoanAmount,
-    required this.totalPendingAmount,
-  });
+//   LoanReportModel({
+//     required this.loanId,
+//     required this.customerName,
+//     required this.customerPhone,
+//     required this.repaymentAmount,
+//     required this.isPaid,
+//     required this.totalLoanAmount,
+//     required this.totalPendingAmount,
+//   });
 
-  factory LoanReportModel.fromMap(Map<String, dynamic> data) {
-    return LoanReportModel(
-      loanId: data['loan_id'] ?? '',
-      customerName: data['customer_name'] ?? '',
-      customerPhone: data['customer_phone'] ?? '',
-      repaymentAmount: data['re-payment_amount'] ?? 0.0,
-      isPaid: data['is_paid'] ?? false,
-      totalLoanAmount: data['total_loan_amount'] ?? 0.0,
-      totalPendingAmount: data['total_pending_amount'] ?? 0.0,
-    );
-  }
-}
+//   factory LoanReportModel.fromMap(Map<String, dynamic> data) {
+//     double roundDouble(num? value) => ((value ?? 0).toDouble()).roundToDouble();
+
+//     return LoanReportModel(
+//       loanId: data['loan_id'] ?? '',
+//       customerName: data['customer_name'] ?? '',
+//       customerPhone: data['customer_phone'] ?? '',
+//       repaymentAmount: roundDouble(data['re-payment_amount']),
+//       isPaid: data['is_paid'] ?? false,
+//       totalLoanAmount: roundDouble(data['total_loan_amount']),
+//       totalPendingAmount: roundDouble(data['total_pending_amount']),
+//     );
+//   }
+// }
